@@ -160,6 +160,57 @@
     yTitle: 'PM concentration'
   })
   </script>
+
+  <h3>Air quality index (lower is better)</h3>
+  <div id="qualityGraph"></div>
+  <script>
+  new PromConsole.Graph({
+    node: document.querySelector("#qualityGraph"),
+    // Some made-up index to fit all "pollution"-related values into single graph as simple overview
+    // Values are normalized to:
+    // - 0 means best quality, no "pollution" (although gases with undefined ranges might go below 0)
+    // - 50 means threshold of acceptable quality (environmental limits, if available)
+    // - 100 worst quality (although selected values might currently go above)
+    expr: [
+      // 12ug is yearly average limit in US; lowest listed on https://en.wikipedia.org/wiki/Particulates#United_States
+      // fit limit to index 50
+      "enviro_pm_2u5{job='enviro',instance='{{ .Params.instance }}'} / 12 * 50",
+      // 25ug is yearly average limit in Australia; lowest listed on https://en.wikipedia.org/wiki/Particulates#Australia
+      // fit limit to index 50
+      "enviro_pm_10u{job='enviro',instance='{{ .Params.instance }}'} / 25 * 50",
+
+      // gas ranges are based on home indoor city environment (your experience may vary => tuning will be required)
+      // TODO it probably need some non-linear transformation to find and fit Index 50 threshold
+      //
+      // values for RED, OX, NH3 for described situations (city flat, indoor)
+      // 460k 37.0 270 - in well ventilated room (windows open)
+      // 315k 24.0 155 - closed windows, stable environment (night)
+      // 280k 21.0 120 - closed windows, stable environment (day)
+      // 160k 21.5 108 - shower and personal care with related "chemicals" (shampoo, creams, deodorants, hair spray)
+      // 120k 23.0  93 - sink cleaning and rotten garbage
+      //
+      // TODO for now normalize all observed from best to worst to 0 to 50 :)
+      // TODO according to the data-sheet the OX resistance is actually increasing for NH2 increasing concentration
+      //   so in generic environment it is not true that low resistance is good => for now ignoring NH2 (otherwise we have to discard OX sensor)
+      "(460 - enviro_gas_red_ohms{job='enviro',instance='{{ .Params.instance }}'} / 1000) / (460 - 120) * 50",
+      "(37 - enviro_gas_ox_ohms{job='enviro',instance='{{ .Params.instance }}'} / 1000) / (37 - 21) * 50",
+      "(270 - enviro_gas_nh3_ohms{job='enviro',instance='{{ .Params.instance }}'} / 1000) / (270 - 93) * 50",
+
+      // fit absolute difference from 50% humidity to:
+      // 0$ is index 0
+      // +-20% is 50 ... use 30-70% RH as comfortable range
+      // +-50% is 100 ... only to max as index 100
+      // => it is almost linear, so let's just use linear function
+      "abs(0.5 - enviro_relative_humidity{job='enviro',instance='{{ .Params.instance }}'}) * 200"
+    ],
+    name: ["PM ≤2.5 μm", "PM ≤10 μm", "RED", "OX", "NH3", "humidity"],
+    min: 0,
+    max: 100,
+    yAxisFormatter: PromConsole.NumberFormatter.humanizeNoSmallPrefix,
+    yHoverFormatter: PromConsole.NumberFormatter.humanizeNoSmallPrefix,
+    yTitle: 'Index 0-100 and beyond'
+  })
+  </script>
 {{ template "prom_content_tail" . }}
 
 {{ template "tail" }}

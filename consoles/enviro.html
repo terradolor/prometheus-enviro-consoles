@@ -28,8 +28,8 @@
   <td{{ if eq (. | value) 1.0 }}>Yes{{ else }} class="alert-danger">No{{ end }}</td>
   <td>{{ template "prom_query_drilldown" (args (printf "enviro_temperature_celsius{job='enviro',instance='%s'}" .Labels.instance) " °C" "printf.1f") }}</td>
   <td>{{ template "prom_query_drilldown" (args (printf "enviro_relative_humidity{job='enviro',instance='%s'} * 100" .Labels.instance) "%" "printf.0f") }}</td>
-  <td>{{ template "prom_query_drilldown" (args (printf "enviro_pressure_pascals{job='enviro',instance='%s'} / 100" .Labels.instance) " hPa" "printf.1f") }}</td>
-  <td>{{ template "prom_query_drilldown" (args (printf "enviro_light_lux{job='enviro',instance='%s'}" .Labels.instance) " Lux" "printf.1f") }}</td>
+  <td>{{ template "prom_query_drilldown" (args (printf "enviro_pressure_pascals{job='enviro',instance='%s'} / 100" .Labels.instance) " hPa" "printf.0f") }}</td>
+  <td>{{ template "prom_query_drilldown" (args (printf "enviro_light_lux{job='enviro',instance='%s'}" .Labels.instance) " Lux" "printf.0f") }}</td>
   <td>
     {{ template "prom_query_drilldown" (args (printf "enviro_gas_red_ohms{job='enviro',instance='%s'} / 1000" .Labels.instance) "" "printf.0f") }} /
     {{ template "prom_query_drilldown" (args (printf "enviro_gas_ox_ohms{job='enviro',instance='%s'} / 1000" .Labels.instance) "" "printf.0f") }} /

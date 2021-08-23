@@ -1,0 +1,162 @@
+{{ template "head" . }}
+
+{{ template "prom_right_table_head" }}
+<tr><th colspan="2">Overview</th></tr>
+  <tr>
+    <td>Temperature</td>
+    <td>{{ template "prom_query_drilldown" (args (printf "enviro_temperature_celsius{job='enviro',instance='%s'}" .Params.instance) " °C" "printf.1f") }}</td>
+  </tr>
+  <tr>
+    <td>Relative humidity</td>
+    <td>{{ template "prom_query_drilldown" (args (printf "enviro_relative_humidity{job='enviro',instance='%s'} * 100" .Params.instance) "%" "printf.1f") }}</td>
+  </tr>
+  <tr>
+    <td>Pressure</td>
+    <td>{{ template "prom_query_drilldown" (args (printf "enviro_pressure_pascals{job='enviro',instance='%s'} / 100" .Params.instance) " hPa" "printf.1f") }}</td>
+  </tr>
+  <tr>
+    <td>Light intensity</td>
+    <td>{{ template "prom_query_drilldown" (args (printf "enviro_light_lux{job='enviro',instance='%s'}" .Params.instance) " Lux" "printf.1f") }}</td>
+  </tr>
+  <tr>
+    <td>Proximity (raw)</td>
+    <td>{{ template "prom_query_drilldown" (args (printf "enviro_proximity_raw{job='enviro',instance='%s'}" .Params.instance)) }}</td>
+  </tr>
+  <tr>
+    <td>Gas RED</td>
+    <td>{{ template "prom_query_drilldown" (args (printf "enviro_gas_red_ohms{job='enviro',instance='%s'} / 1000" .Params.instance) " kΩ" "printf.1f") }}</td>
+  </tr>
+  <tr>
+    <td>Gas OX</td>
+    <td>{{ template "prom_query_drilldown" (args (printf "enviro_gas_ox_ohms{job='enviro',instance='%s'} / 1000" .Params.instance) " kΩ" "printf.1f") }}</td>
+  </tr>
+  <tr>
+    <td>Gas NH3</td>
+    <td>{{ template "prom_query_drilldown" (args (printf "enviro_gas_nh3_ohms{job='enviro',instance='%s'} / 1000" .Params.instance) " kΩ" "printf.1f") }}</td>
+  </tr>
+  <tr>
+    <td>PM ≤1μm</td>
+    <td>{{ template "prom_query_drilldown" (args (printf "enviro_pm_1u{job='enviro',instance='%s'}" .Params.instance) " μg/m³") }}</td>
+  </tr>
+  <tr>
+    <td>PM ≤2.5μm</td>
+    <td>{{ template "prom_query_drilldown" (args (printf "enviro_pm_2u5{job='enviro',instance='%s'}" .Params.instance) " μg/m³") }}</td>
+  </tr>
+  <tr>
+    <td>PM ≤10μm</td>
+    <td>{{ template "prom_query_drilldown" (args (printf "enviro_pm_10u{job='enviro',instance='%s'}" .Params.instance) " μg/m³") }}</td>
+  </tr>
+{{ template "prom_right_table_tail" }}
+
+{{ template "prom_content_head" . }}
+  <h1>Enviro Overview - {{ reReplaceAll "(.*?://)([^:/]+?)(:\\d+)?/.*" "$2" .Params.instance }}</h1>
+
+  <h3>Temperature</h3>
+  <div id="temperatureGraph"></div>
+  <script>
+  new PromConsole.Graph({
+    node: document.querySelector("#temperatureGraph"),
+    expr: "enviro_temperature_celsius{job='enviro',instance='{{ .Params.instance }}'}",
+    yAxisFormatter: PromConsole.NumberFormatter.humanizeNoSmallPrefix,
+    yHoverFormatter: PromConsole.NumberFormatter.humanizeNoSmallPrefix,
+    yUnits: '°C',
+    yTitle: 'Temperature'
+  })
+  </script>
+
+  <h3>Relative humidity</h3>
+  <div id="humidityGraph"></div>
+  <script>
+  new PromConsole.Graph({
+    node: document.querySelector("#humidityGraph"),
+    expr: "enviro_relative_humidity{job='enviro',instance='{{ .Params.instance }}'} * 100",
+    min: 0,
+    max: 100,
+    yAxisFormatter: PromConsole.NumberFormatter.humanizeNoSmallPrefix,
+    yHoverFormatter: PromConsole.NumberFormatter.humanizeNoSmallPrefix,
+    yUnits: "%",
+    yTitle: 'RH'
+  })
+  </script>
+
+  <h3>Pressure</h3>
+  <div id="pressureGraph"></div>
+  <script>
+  new PromConsole.Graph({
+    node: document.querySelector("#pressureGraph"),
+    expr: "enviro_pressure_pascals{job='enviro',instance='{{ .Params.instance }}'} / 100",
+    yAxisFormatter: PromConsole.NumberFormatter.humanizeNoSmallPrefix,
+    yHoverFormatter: PromConsole.NumberFormatter.humanizeNoSmallPrefix,
+    yUnits: 'hPa',
+    yTitle: 'Pressure'
+  })
+  </script>
+
+  <h3>Light intensity</h3>
+  <div id="lightGraph"></div>
+  <script>
+  new PromConsole.Graph({
+    node: document.querySelector("#lightGraph"),
+    expr: "enviro_light_lux{job='enviro',instance='{{ .Params.instance }}'}",
+    min: 0,
+    yAxisFormatter: PromConsole.NumberFormatter.humanizeNoSmallPrefix,
+    yHoverFormatter: PromConsole.NumberFormatter.humanizeNoSmallPrefix,
+    yUnits: 'Lux',
+    yTitle: 'Light'
+  })
+  </script>
+
+  <!-- Proximity graph isn't enabled by default because this sensor isn't relevant for typical weather stations.
+  <h3>Proximity</h3>
+  <div id="proximityGraph"></div>
+  <script>
+  new PromConsole.Graph({
+    node: document.querySelector("#proximityGraph"),
+    expr: "enviro_proximity_raw{job='enviro',instance='{{ .Params.instance }}'}",
+    min: 0,
+    yAxisFormatter: PromConsole.NumberFormatter.humanizeNoSmallPrefix,
+    yHoverFormatter: PromConsole.NumberFormatter.humanizeNoSmallPrefix,
+    yTitle: 'Proximity (raw)'
+  })
+  </script>
+  -->
+
+  <h3>Gas concentration (lower Ω value means higher concentration)</h3>
+  <div id="gasGraph"></div>
+  <script>
+  new PromConsole.Graph({
+    node: document.querySelector("#gasGraph"),
+    expr: [
+      "enviro_gas_red_ohms{job='enviro',instance='{{ .Params.instance }}'}",
+      "enviro_gas_ox_ohms{job='enviro',instance='{{ .Params.instance }}'} * 10",  // multiplied to fit into similar value range as RED and NH3
+      "enviro_gas_nh3_ohms{job='enviro',instance='{{ .Params.instance }}'}"
+    ],
+    name: ["RED sensor", "OX sensor (×10)", "NH3 sensor"],
+    yAxisFormatter: PromConsole.NumberFormatter.humanizeNoSmallPrefix,
+    yHoverFormatter: PromConsole.NumberFormatter.humanizeNoSmallPrefix,
+    yUnits: 'Ω',
+    yTitle: 'Gas concentration'
+  })
+  </script>
+
+  <h3>Particulate matter concentration</h3>
+  <div id="pmGraph"></div>
+  <script>
+  new PromConsole.Graph({
+    node: document.querySelector("#pmGraph"),
+    expr: [
+      "enviro_pm_1u{job='enviro',instance='{{ .Params.instance }}'}",
+      "enviro_pm_2u5{job='enviro',instance='{{ .Params.instance }}'}",
+      "enviro_pm_10u{job='enviro',instance='{{ .Params.instance }}'}"
+    ],
+    name: ["≤1 μm", "≤2.5 μm", "≤10 μm"],
+    min: 0,
+    yAxisFormatter: PromConsole.NumberFormatter.humanizeNoSmallPrefix,
+    yHoverFormatter: PromConsole.NumberFormatter.humanizeNoSmallPrefix,
+    yUnits: 'μg/m³',
+    yTitle: 'PM concentration'
+  })
+  </script>
+{{ template "prom_content_tail" . }}
+
+{{ template "tail" }}

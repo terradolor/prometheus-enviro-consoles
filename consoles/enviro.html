@@ -1,0 +1,56 @@
+{{ template "head" . }}
+
+{{ template "prom_right_table_head" }}
+<tr>
+  <th>Enviro</th>
+  <th>{{ template "prom_query_drilldown" (args "sum(up{job='enviro'})") }} / {{ template "prom_query_drilldown" (args "count(up{job='enviro'})") }}</th>
+</tr>
+{{ template "prom_right_table_tail" }}
+
+{{ template "prom_content_head" . }}
+<h1>Enviro</h1>
+
+<table class="table table-condensed table-striped table-bordered" style="width: 0%;white-space:nowrap">
+<tr>
+  <th>Enviro</th>
+  <th>Up</th>
+  <th>Temp</th>
+  <th>Humidity</th>
+  <th>Pressure</th>
+  <th>Light</th>
+  <th>Gas&nbsp;RED/OX/NH3</th>
+  <th>PM&nbsp;≤1/≤2.5/≤10μm</th>
+</tr>
+{{ define "printf.0f" }}{{ printf "%.0f" . }}{{ end }}
+{{ range query "up{job='enviro'}" | sortByLabel "instance" }}
+<tr>
+  <td><a href="enviro-overview.html?instance={{ .Labels.instance }}">{{ reReplaceAll "(.*?://)([^:/]+?)(:\\d+)?/.*" "$2" .Labels.instance }}</a></td>
+  <td{{ if eq (. | value) 1.0 }}>Yes{{ else }} class="alert-danger">No{{ end }}</td>
+  <td>{{ template "prom_query_drilldown" (args (printf "enviro_temperature_celsius{job='enviro',instance='%s'}" .Labels.instance) " °C" "printf.1f") }}</td>
+  <td>{{ template "prom_query_drilldown" (args (printf "enviro_relative_humidity{job='enviro',instance='%s'} * 100" .Labels.instance) "%" "printf.0f") }}</td>
+  <td>{{ template "prom_query_drilldown" (args (printf "enviro_pressure_pascals{job='enviro',instance='%s'} / 100" .Labels.instance) " hPa" "printf.1f") }}</td>
+  <td>{{ template "prom_query_drilldown" (args (printf "enviro_light_lux{job='enviro',instance='%s'}" .Labels.instance) " Lux" "printf.1f") }}</td>
+  <td>
+    {{ template "prom_query_drilldown" (args (printf "enviro_gas_red_ohms{job='enviro',instance='%s'} / 1000" .Labels.instance) "" "printf.0f") }} /
+    {{ template "prom_query_drilldown" (args (printf "enviro_gas_ox_ohms{job='enviro',instance='%s'} / 1000" .Labels.instance) "" "printf.0f") }} /
+    {{ template "prom_query_drilldown" (args (printf "enviro_gas_nh3_ohms{job='enviro',instance='%s'} / 1000" .Labels.instance) " kΩ" "printf.0f") }}
+  </td>
+  <td>
+    {{ template "prom_query_drilldown" (args (printf "enviro_pm_1u{job='enviro',instance='%s'}" .Labels.instance)) }} /
+    {{ template "prom_query_drilldown" (args (printf "enviro_pm_2u5{job='enviro',instance='%s'}" .Labels.instance)) }} /
+    {{ template "prom_query_drilldown" (args (printf "enviro_pm_10u{job='enviro',instance='%s'}" .Labels.instance) " μg/m³") }}
+  </td>
+</tr>
+{{ else }}
+<tr><td colspan=4>No enviro jobs found.</td></tr>
+{{ end }}
+</table>
+
+
+{{ template "prom_content_tail" . }}
+
+<p>
+&nbsp;Values are collected using <a href="https://github.com/terradolor/prometheus-enviro-exporter">prometheus-enviro-exporter</a> and presented by <a href="https://github.com/terradolor/prometheus-enviro-consoles">prometheus-enviro-consoles</a>.
+</p>
+
+{{ template "tail" }}

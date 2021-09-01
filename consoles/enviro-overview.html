@@ -161,6 +161,42 @@
   })
   </script>
 
+  <!-- TODO remove, only for easier tuning and analysis of index -->
+  <h3>Gas concentration (1h min)</h3>
+  <div id="gasGraphMin"></div>
+  <script>
+  new PromConsole.Graph({
+    node: document.querySelector("#gasGraphMin"),
+    expr: [
+      "min_over_time(enviro_gas_red_ohms{job='enviro',instance='{{ .Params.instance }}'}[1h])",
+      "min_over_time(enviro_gas_ox_ohms{job='enviro',instance='{{ .Params.instance }}'}[1h]) * 10",  // multiplied to fit into similar value range as RED and NH3
+      "min_over_time(enviro_gas_nh3_ohms{job='enviro',instance='{{ .Params.instance }}'}[1h])"
+    ],
+    name: ["RED sensor min", "OX sensor (×10) min", "NH3 sensor min"],
+    yAxisFormatter: PromConsole.NumberFormatter.humanizeNoSmallPrefix,
+    yHoverFormatter: PromConsole.NumberFormatter.humanizeNoSmallPrefix,
+    yUnits: 'Ω',
+    yTitle: 'Gas concentration'
+  })
+  </script>
+  <h3>Gas concentration (1h max)</h3>
+  <div id="gasGraphMax"></div>
+  <script>
+  new PromConsole.Graph({
+    node: document.querySelector("#gasGraphMax"),
+    expr: [
+      "max_over_time(enviro_gas_red_ohms{job='enviro',instance='{{ .Params.instance }}'}[1h])",
+      "max_over_time(enviro_gas_ox_ohms{job='enviro',instance='{{ .Params.instance }}'}[1h]) * 10",  // multiplied to fit into similar value range as RED and NH3
+      "max_over_time(enviro_gas_nh3_ohms{job='enviro',instance='{{ .Params.instance }}'}[1h])"
+    ],
+    name: ["RED sensor max", "OX sensor (×10) max", "NH3 sensor max"],
+    yAxisFormatter: PromConsole.NumberFormatter.humanizeNoSmallPrefix,
+    yHoverFormatter: PromConsole.NumberFormatter.humanizeNoSmallPrefix,
+    yUnits: 'Ω',
+    yTitle: 'Gas concentration'
+  })
+  </script>
+
   <h3>Air quality index (lower is better)</h3>
   <div id="qualityGraph"></div>
   <script>

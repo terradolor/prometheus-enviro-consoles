@@ -172,13 +172,8 @@
     // - 50 means threshold of acceptable quality (environmental limits, if available)
     // - 100 worst quality (although selected values might currently go above)
     expr: [
-      // 12ug is yearly average limit in US; lowest listed on https://en.wikipedia.org/wiki/Particulates#United_States
-      // fit limit to index 50
-      "enviro_pm_2u5{job='enviro',instance='{{ .Params.instance }}'} / 12 * 50",
-      // 25ug is yearly average limit in Australia; lowest listed on https://en.wikipedia.org/wiki/Particulates#Australia
-      // fit limit to index 50
-      "enviro_pm_10u{job='enviro',instance='{{ .Params.instance }}'} / 25 * 50",
-
+      // Note: visualize gas first in same order as in gas graph above to reuse same colors (gas value are probably the most important ones)
+      //
       // gas ranges are based on home indoor city environment (your experience may vary => tuning will be required)
       // TODO it probably need some non-linear transformation to find and fit Index 50 threshold
       //
@@ -196,6 +191,13 @@
       "(37 - enviro_gas_ox_ohms{job='enviro',instance='{{ .Params.instance }}'} / 1000) / (37 - 21) * 50",
       "(270 - enviro_gas_nh3_ohms{job='enviro',instance='{{ .Params.instance }}'} / 1000) / (270 - 93) * 50",
 
+      // 25ug is yearly average limit in Australia; lowest listed on https://en.wikipedia.org/wiki/Particulates#Australia
+      // fit limit to index 50
+      "enviro_pm_10u{job='enviro',instance='{{ .Params.instance }}'} / 25 * 50",
+      // 12ug is yearly average limit in US; lowest listed on https://en.wikipedia.org/wiki/Particulates#United_States
+      // fit limit to index 50
+      "enviro_pm_2u5{job='enviro',instance='{{ .Params.instance }}'} / 12 * 50",
+
       // fit absolute difference from 50% humidity to:
       // 0$ is index 0
       // +-20% is 50 ... use 30-70% RH as comfortable range
@@ -203,7 +205,7 @@
       // => it is almost linear, so let's just use linear function
       "abs(0.5 - enviro_relative_humidity{job='enviro',instance='{{ .Params.instance }}'}) * 200"
     ],
-    name: ["PM ≤2.5 μm", "PM ≤10 μm", "RED", "OX", "NH3", "humidity"],
+    name: ["RED", "OX", "NH3", "PM ≤10 μm", "PM ≤2.5 μm", "humidity"],
     min: 0,
     max: 100,
     yAxisFormatter: PromConsole.NumberFormatter.humanizeNoSmallPrefix,

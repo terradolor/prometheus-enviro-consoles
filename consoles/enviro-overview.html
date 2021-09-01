@@ -139,17 +139,20 @@
   })
   </script>
 
-  <h3>Particulate matter concentration</h3>
+  <h3>Particulate matter concentration (5 minute avg/max)</h3>
   <div id="pmGraph"></div>
   <script>
   new PromConsole.Graph({
     node: document.querySelector("#pmGraph"),
     expr: [
-      "enviro_pm_1u{job='enviro',instance='{{ .Params.instance }}'}",
-      "enviro_pm_2u5{job='enviro',instance='{{ .Params.instance }}'}",
-      "enviro_pm_10u{job='enviro',instance='{{ .Params.instance }}'}"
+      // used 5m avg because values are jumping by whole number steps there and back
+      // ... and added max to visualize worst case (which might be hidden by averaging); PM10 max handles max of all PM sizes
+      "max_over_time(enviro_pm_10u{job='enviro',instance='{{ .Params.instance }}'}[5m])",
+      "avg_over_time(enviro_pm_10u{job='enviro',instance='{{ .Params.instance }}'}[5m])",
+      "avg_over_time(enviro_pm_2u5{job='enviro',instance='{{ .Params.instance }}'}[5m])",
+      "avg_over_time(enviro_pm_1u{job='enviro',instance='{{ .Params.instance }}'}[5m])"
     ],
-    name: ["≤1 μm", "≤2.5 μm", "≤10 μm"],
+    name: ["≤10 μm (max)", "≤10 μm (avg)", "≤2.5 μm (avg)", "≤1 μm (avg)"],
     min: 0,
     yAxisFormatter: PromConsole.NumberFormatter.humanizeNoSmallPrefix,
     yHoverFormatter: PromConsole.NumberFormatter.humanizeNoSmallPrefix,

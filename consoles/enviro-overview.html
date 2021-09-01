@@ -162,7 +162,7 @@
   </script>
 
   <!-- TODO remove, only for easier tuning and analysis of index -->
-  <h3>Gas concentration (1h min)</h3>
+  <h3>Gas concentration (1h min Ω value)</h3>
   <div id="gasGraphMin"></div>
   <script>
   new PromConsole.Graph({
@@ -179,7 +179,7 @@
     yTitle: 'Gas concentration'
   })
   </script>
-  <h3>Gas concentration (1h max)</h3>
+  <h3>Gas concentration (1h max Ω value)</h3>
   <div id="gasGraphMax"></div>
   <script>
   new PromConsole.Graph({
@@ -213,18 +213,20 @@
       // gas ranges are based on home indoor city environment (your experience may vary => tuning will be required)
       // TODO it probably need some non-linear transformation to find and fit Index 50 threshold
       //
-      // values for RED, OX, NH3 for described situations (city flat, indoor)
+      // values for RED, OX, NH3 for described situations (city flat, indoor) .. different days
+      // 460k 67.5 242 - in well ventilated room (windows open, close to window)
       // 460k 37.0 270 - in well ventilated room (windows open)
       // 315k 24.0 155 - closed windows, stable environment (night)
       // 280k 21.0 120 - closed windows, stable environment (day)
       // 160k 21.5 108 - shower and personal care with related "chemicals" (shampoo, creams, deodorants, hair spray)
+      // 144k 19.6  98 - closed windows, stable environment (night)
       // 120k 23.0  93 - sink cleaning and rotten garbage
       //
       // TODO for now normalize all observed from best to worst to 0 to 50 :)
       // TODO according to the data-sheet the OX resistance is actually increasing for NH2 increasing concentration
       //   so in generic environment it is not true that low resistance is good => for now ignoring NH2 (otherwise we have to discard OX sensor)
       "(460 - enviro_gas_red_ohms{job='enviro',instance='{{ .Params.instance }}'} / 1000) / (460 - 120) * 50",
-      "(37 - enviro_gas_ox_ohms{job='enviro',instance='{{ .Params.instance }}'} / 1000) / (37 - 21) * 50",
+      "(67.5 - enviro_gas_ox_ohms{job='enviro',instance='{{ .Params.instance }}'} / 1000) / (67.5 - 19.6) * 50",
       "(270 - enviro_gas_nh3_ohms{job='enviro',instance='{{ .Params.instance }}'} / 1000) / (270 - 93) * 50",
 
       // 25ug is yearly average limit in Australia; lowest listed on https://en.wikipedia.org/wiki/Particulates#Australia

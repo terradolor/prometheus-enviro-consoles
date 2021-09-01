@@ -231,10 +231,10 @@
 
       // 25ug is yearly average limit in Australia; lowest listed on https://en.wikipedia.org/wiki/Particulates#Australia
       // fit limit to index 50
-      "enviro_pm_10u{job='enviro',instance='{{ .Params.instance }}'} / 25 * 50",
+      "avg_over_time(enviro_pm_10u{job='enviro',instance='{{ .Params.instance }}'}[5m]) / 25 * 50",
       // 12ug is yearly average limit in US; lowest listed on https://en.wikipedia.org/wiki/Particulates#United_States
       // fit limit to index 50
-      "enviro_pm_2u5{job='enviro',instance='{{ .Params.instance }}'} / 12 * 50",
+      "avg_over_time(enviro_pm_2u5{job='enviro',instance='{{ .Params.instance }}'}[5m]) / 12 * 50",
 
       // fit absolute difference from 50% humidity to:
       // 0$ is index 0
@@ -243,7 +243,7 @@
       // => it is almost linear, so let's just use linear function
       "abs(0.5 - enviro_relative_humidity{job='enviro',instance='{{ .Params.instance }}'}) * 200"
     ],
-    name: ["RED", "OX", "NH3", "PM ≤10 μm", "PM ≤2.5 μm", "humidity"],
+    name: ["RED", "OX", "NH3", "PM ≤10 μm (5m avg)", "PM ≤2.5 μm (5m avg)", "humidity"],
     min: 0,
     max: 100,
     yAxisFormatter: PromConsole.NumberFormatter.humanizeNoSmallPrefix,

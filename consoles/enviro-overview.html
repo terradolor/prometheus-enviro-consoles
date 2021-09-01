@@ -70,8 +70,8 @@
   new PromConsole.Graph({
     node: document.querySelector("#humidityGraph"),
     expr: "enviro_relative_humidity{job='enviro',instance='{{ .Params.instance }}'} * 100",
-    min: 0,
-    max: 100,
+    //min: 0,  // disabled because in indoor environment it always oscillates around 50 and changes are not visible (unless you zoom out)
+    //max: 100,
     yAxisFormatter: PromConsole.NumberFormatter.humanizeNoSmallPrefix,
     yHoverFormatter: PromConsole.NumberFormatter.humanizeNoSmallPrefix,
     yUnits: "%",
